@@ -12,15 +12,15 @@
   // work in a copy → they don't, and we'd need another plan (prebuilds on
   // the assignment repos, or just accept the cold first start).
 
-  // PPBDS student image, pinned to v0.4.1. Bumping is a deliberate
+  // PPBDS student image, pinned to v0.5.0. Bumping is a deliberate
   // edit to this line — never use `:latest` in student-facing config,
   // since it would float silently with every push to PPBDS/devcontainers.
   //
   // Bakes in: gh, quarto, arf (Rust R console), httpgd, pak,
   // tutorial.helpers, vscode.tutorials, and four AI coding CLIs:
   //   - claude  (Anthropic)         — sign in with a Claude plan, or ANTHROPIC_API_KEY
-  //   - gemini  (Google)            — sign in (free tier), or GOOGLE_API_KEY
   //   - codex   (OpenAI)            — sign in with a ChatGPT plan, or `codex login`
+  //   - agy     (Antigravity/Google)— sign in with a Google account, or ANTIGRAVITY_API_KEY
   //   - aider   (multi-provider)    — key-only: DeepSeek/OpenRouter for cheap models
   // Signing in on first run is the recommended path; API keys (set as
   // Codespaces user secrets at https://github.com/settings/codespaces) are
@@ -31,7 +31,7 @@
   // OTHER repos (e.g., cloning a sibling package and pushing to it)
   // requires a one-time `gh auth login` per Codespace — that's by design,
   // not a bug. The built-in token is read-mostly outside the home repo.
-  "image": "ghcr.io/ppbds/devcontainers/student:0.4.1",
+  "image": "ghcr.io/ppbds/devcontainers/student:0.5.0",
 
   // Refresh the fast-moving PPBDS course packages to the latest commit on
   // each one's default branch, every time a Codespace is created. The
@@ -79,8 +79,8 @@
       // Extensions students actually need.
       //
       // DELIBERATELY ABSENT: the AI assistant *extensions* (anthropic.claude-code,
-      // openai.chatgpt). The AI tools ship as CLIs in the image (claude, gemini,
-      // codex, aider) and that is intentional — do NOT add the extension panels
+      // openai.chatgpt). The AI tools ship as CLIs in the image (claude, codex,
+      // agy, aider) and that is intentional — do NOT add the extension panels
       // here. Tested 2026-06: the in-editor panels are webviews that render
       // broken in the browser-based Codespaces client (garbled/overlapping UI),
       // and there is no reliable desktop fallback for a big slice of students —
