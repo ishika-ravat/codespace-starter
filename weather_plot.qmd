@@ -1,0 +1,85 @@
+---
+title: "weather plot"
+format: html
+---
+This document retrieves historical weather data and displays the daily maximum temperatures for Portland, Oregon.
+
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+#| fig-width: 11
+#| fig-height: 6.5
+#| dpi: 300
+
+library(tidyverse)
+library(httr)
+library(jsonlite)
+library(scales)
+
+# Request data from ACIS API
+params <- list(
+  sid = "USW00024229",
+  sdate = "1979-01-01",
+  edate = "2021-12-31",
+  elems = list(list(name = "maxt", interval = "dly"))
+)
+
+response <- POST(
+  url = "https://data.rcc-acis.org/StnData",
+  body = toJSON(params, auto_unbox = TRUE),
+  content_type_json(),
+  encode = "json"
+)
+
+res_data <- fromJSON(content(response, "text", encoding = "UTF-8"))
+
+# Process and clean
+portland_temps <- tibble(
+  date = as.Date(res_data$data[, 1]),
+  tmax = as.numeric(res_data$data[, 2])
+) %>% 
+  filter(!is.na(tmax))
+
+# Create ggplot
+ggplot(portland_temps, aes(x = date, y = tmax)) +
+  geom_point(aes(color = tmax), alpha = 0.4, size = 0.6) +
+  geom_smooth(color = "#111111", method = "gam", formula = y ~ s(x, bs = "cs"), 
+              linewidth = 1, linetype = "solid", se = TRUE, fill = "gray70", alpha = 0.5) +
+  scale_color_gradientn(
+    colors = c("#2166ac", "#67a9cf", "#d1e5f0", "#fddbc7", "#f4a582", "#d6604f", "#b2182b"),
+    name = "Daily Max Temp (°F)"
+  ) +
+  scale_x_date(
+    date_breaks = "5 years",
+    date_labels = "%Y",
+    expand = c(0.01, 0.01)
+  ) +
+  scale_y_continuous(
+    breaks = seq(10, 120, by = 10),
+    labels = paste0(seq(10, 120, by = 10), "°F")
+  ) +
+  labs(
+    title = "Daily Maximum Temperatures in Portland, Oregon",
+    subtitle = "Observations from Portland International Airport (1979 - 2021)",
+    x = "Year",
+    y = "Daily Maximum Temperature (°F)",
+    caption = "Source: NOAA ACIS API | Station ID: USW00024229"
+  ) +
+  theme_minimal(base_family = "sans") +
+  theme(
+    plot.title = element_text(face = "bold", size = 16, color = "#111111", margin = margin(b = 6)),
+    plot.subtitle = element_text(size = 11, color = "#555555", margin = margin(b = 15)),
+    plot.caption = element_text(size = 8, color = "#777777", margin = margin(t = 12)),
+    axis.title.x = element_text(face = "bold", size = 11, color = "#222222", margin = margin(t = 10)),
+    axis.title.y = element_text(face = "bold", size = 11, color = "#222222", margin = margin(r = 10)),
+    axis.text = element_text(size = 9, color = "#444444"),
+    panel.grid.minor = element_blank(),
+    panel.grid.major = element_line(color = "#ebebeb", linewidth = 0.4),
+    legend.position = "bottom",
+    legend.title = element_text(face = "bold", size = 9),
+    legend.text = element_text(size = 8),
+    legend.key.width = unit(1.5, "cm"),
+    plot.margin = margin(20, 20, 20, 20)
+  )
+```
